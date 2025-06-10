@@ -1,5 +1,7 @@
+// CameraCapture.tsx
 import React, { useRef, useState } from 'react';
 import Webcam from 'react-webcam';
+import { detectEmotion } from '../services/emotionService';
 
 interface Props {
   onCapture: (emotion: string) => void;
@@ -19,36 +21,37 @@ export default function CameraCapture({ onCapture }: Props) {
     const imageSrc = webcamRef.current?.getScreenshot();
     if (imageSrc) {
       setLoading(true);
-      try {
-        const response = await fetch('http://localhost:5000/detect', { // <-- ALTERE AQUI para o endpoint do backend
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ image: imageSrc }), // <-- o backend deve aceitar Base64 da imagem
-        });
-        const data = await response.json();
-        onCapture(data.emotion); // <-- o backend deve retornar { emotion: "happy" } por exemplo
-      } catch (error) {
-        console.error('Erro ao enviar imagem:', error);
-        onCapture('Erro na detecção');
-      } finally {
-        setLoading(false);
-      }
+      const emotion = await detectEmotion(imageSrc);
+      onCapture(emotion);
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col items-center">
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <Webcam
         audio={false}
         ref={webcamRef}
         screenshotFormat="image/jpeg"
         videoConstraints={videoConstraints}
-        className="rounded shadow-md mb-4"
+        style={{
+          borderRadius: '8px',
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+          marginBottom: '1rem',
+        }}
       />
       <button
         onClick={capture}
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
         disabled={loading}
+        style={{
+          backgroundColor: '#2563eb',
+          color: '#fff',
+          padding: '0.5rem 1rem',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: 'pointer',
+          opacity: loading ? 0.5 : 1,
+        }}
       >
         {loading ? 'Analisando...' : 'Detectar Emoção'}
       </button>

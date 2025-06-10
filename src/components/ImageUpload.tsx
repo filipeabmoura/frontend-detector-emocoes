@@ -1,4 +1,6 @@
+// ImageUpload.tsx
 import React, { useState } from 'react';
+import { detectEmotion } from '../services/emotionService';
 
 interface Props {
   onDetect: (emotion: string) => void;
@@ -19,39 +21,35 @@ export default function ImageUpload({ onDetect }: Props) {
 
     const reader = new FileReader();
     reader.onloadend = async () => {
-      const base64Image = reader.result;
-
+      const base64Image = reader.result as string;
       setLoading(true);
-      try {
-        const response = await fetch('http://localhost:5000/detect', { // <-- ALTERE AQUI
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ image: base64Image }), // deve estar em base64
-        });
-        const data = await response.json();
-        onDetect(data.emotion);
-      } catch (error) {
-        console.error('Erro ao enviar imagem:', error);
-        onDetect('Erro na detecção');
-      } finally {
-        setLoading(false);
-      }
+      const emotion = await detectEmotion(base64Image);
+      onDetect(emotion);
+      setLoading(false);
     };
 
-    reader.readAsDataURL(selectedImage); // Converte imagem em base64
+    reader.readAsDataURL(selectedImage);
   };
 
   return (
-    <div className="mt-6 flex flex-col items-center">
+    <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <input
         type="file"
         accept="image/*"
         onChange={handleImageChange}
-        className="mb-4"
+        style={{ marginBottom: '1rem' }}
       />
       <button
         onClick={handleUpload}
-        className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50"
+        style={{
+          backgroundColor: '#16a34a',
+          color: '#fff',
+          padding: '0.5rem 1rem',
+          borderRadius: '0.25rem',
+          border: 'none',
+          cursor: 'pointer',
+          opacity: (!selectedImage || loading) ? 0.5 : 1,
+        }}
         disabled={!selectedImage || loading}
       >
         {loading ? 'Analisando...' : 'Enviar Imagem'}
