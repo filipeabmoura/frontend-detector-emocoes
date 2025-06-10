@@ -15,7 +15,6 @@ O frontend captura a imagem, converte para base64 e envia para um backend (não 
 
 - React (com React Router para navegação)
 - TypeScript
-- Tailwind CSS (para estilização rápida e responsiva)
 - react-webcam (para captura de imagem via webcam)
 - Fetch API para comunicação com backend
 
