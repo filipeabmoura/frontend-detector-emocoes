@@ -12,10 +12,10 @@ export default function Result() {
 
   if (!emotion || !probabilities) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6">
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-gray-100">
         <p className="text-red-600 text-lg font-semibold mb-4">Nenhum dado recebido.</p>
         <button
-          className="bg-blue-600 text-white px-4 py-2 rounded"
+          className="w-72 py-2 rounded text-white transition bg-blue-600 hover:bg-blue-700"
           onClick={() => navigate("/")}
         >
           Voltar para a Home
@@ -40,7 +40,7 @@ export default function Result() {
       {
         label: "Probabilidade",
         data: Object.values(probabilities),
-        backgroundColor: "#3B82F6",
+        backgroundColor: "#2563EB", // Azul igual ao bg-blue-600
         borderRadius: 6,
       },
     ],
@@ -54,20 +54,32 @@ export default function Result() {
         max: 1,
       },
     },
+    plugins: {
+      legend: {
+        display: false, // Remove legenda, pra ficar mais limpo igual o resto da interface
+      },
+    },
   };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-gray-100">
-      <h1 className="text-3xl font-bold mb-2">Você está sentindo:</h1>
-      <div className="text-6xl mb-2">{emotionEmojis[emotion.toLowerCase()] || "🙂"}</div>
-      <p className="text-2xl font-semibold text-gray-700 mb-8 capitalize">{emotion}</p>
+      {/* TÍTULO */}
+      <h1 className="text-4xl font-bold mb-2 text-gray-800 text-center">Você está sentindo:</h1>
 
-      <div className="w-full max-w-xl mb-8 bg-white p-4 rounded-xl shadow">
+      {/* EMOJI */}
+      <div className="text-6xl mb-2">{emotionEmojis[emotion.toLowerCase()] || "🙂"}</div>
+
+      {/* EMOÇÃO */}
+      <p className="text-2xl font-semibold text-gray-700 mb-6 capitalize">{emotion}</p>
+
+      {/* GRÁFICO */}
+      <div className="w-full max-w-xl mb-8 bg-white p-6 rounded-xl shadow-md">
         <Bar data={chartData} options={chartOptions} />
       </div>
 
+      {/* BOTÃO */}
       <button
-        className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition"
+        className="w-72 py-2 rounded text-white transition bg-blue-600 hover:bg-blue-700"
         onClick={() => navigate("/")}
       >
         Voltar
