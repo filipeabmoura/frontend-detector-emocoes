@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Logo from "../assets/logo.png";
+import { enviarImagem } from "../utils/api";
 
 export default function Home() {
   const [image, setImage] = useState<File | null>(null);
@@ -21,55 +22,49 @@ export default function Home() {
   };
 
   const handleSubmit = async () => {
-    const fakeResponse = {
-      emotion: "happy",
-      probabilities: {
-        happy: 0.78,
-        sad: 0.05,
-        angry: 0.01,
-        surprised: 0.1,
-        neutral: 0.06,
-      },
-    };
+    if (!image) return;
 
-    navigate("/result", {
-      state: {
-        emotion: fakeResponse.emotion,
-        probabilities: fakeResponse.probabilities,
-      },
-    });
+    try {
+      const resultado = await enviarImagem(image);
+
+      const emotion = resultado.emocao_principal;
+      const raw = resultado.probabilidades;
+
+      const total = Object.values(raw).reduce((acc, val) => acc + val, 0);
+      const probabilities = Object.fromEntries(
+        Object.entries(raw).map(([key, val]) => [key, val / total])
+      );
+
+      navigate("/result", {
+        state: {
+          emotion,
+          probabilities,
+        },
+      });
+    } catch (erro: any) {
+      alert("Erro ao analisar imagem: " + erro.message);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center px-4">
-      {/* LOGO */}
-      <img src={Logo} alt="Logo do Projeto" className="w-40 mb-4" />
-
-      {/* TÍTULO */}
-      <h1 className="text-4xl font-bold mb-2 text-gray-800 text-center">Detector de Emoções</h1>
+      <img src={Logo} alt="Logo" className="w-40 mb-4" />
+      <h1 className="text-4xl font-bold mb-2 text-gray-800">Detector de Emoções</h1>
       <p className="mb-6 text-gray-600 text-center">Envie uma foto e veja qual emoção está mais presente</p>
 
-      {/* INPUT DE IMAGEM OU PREVIEW */}
       {imagePreview ? (
         <div className="mb-4 flex flex-col items-center">
           <img
             src={imagePreview}
-            alt="Pré-visualização"
-            className="w-72 h-72 object-cover rounded-lg shadow-md border-2 border-gray-300 opacity-0 animate-fade-in"
+            className="w-72 h-72 object-cover rounded-lg shadow-md border-2 border-gray-300"
           />
-          <button
-            onClick={handleRemoveImage}
-            className="mt-3 text-blue-600 hover:underline text-sm"
-          >
+          <button onClick={handleRemoveImage} className="mt-3 text-blue-600 hover:underline text-sm">
             Trocar imagem
           </button>
         </div>
       ) : (
         <>
-          <label
-            htmlFor="imageUpload"
-            className="cursor-pointer bg-white border-2 border-dashed border-gray-300 rounded-lg p-6 w-72 text-center text-gray-500 hover:border-blue-500 transition mb-4"
-          >
+          <label htmlFor="imageUpload" className="cursor-pointer bg-white border-2 border-dashed border-gray-300 rounded-lg p-6 w-72 text-center text-gray-500 hover:border-blue-500 transition mb-4">
             Clique para escolher uma imagem
           </label>
           <input
@@ -82,31 +77,15 @@ export default function Home() {
         </>
       )}
 
-      {/* BOTÃO */}
       <button
         onClick={handleSubmit}
         disabled={!image}
         className={`w-72 py-2 rounded text-white transition ${
-          image
-            ? "bg-blue-600 hover:bg-blue-700"
-            : "bg-gray-400 cursor-not-allowed"
+          image ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-400 cursor-not-allowed"
         }`}
       >
         Detectar Emoção
       </button>
-
-      {/* ANIMAÇÃO */}
-      <style>
-        {`
-          @keyframes fade-in {
-            0% { opacity: 0; transform: scale(0.95); }
-            100% { opacity: 1; transform: scale(1); }
-          }
-          .animate-fade-in {
-            animation: fade-in 0.4s ease-out forwards;
-          }
-        `}
-      </style>
     </div>
   );
 }
