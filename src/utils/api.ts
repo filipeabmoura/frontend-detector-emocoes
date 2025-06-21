@@ -2,7 +2,7 @@ export const enviarImagem = async (imagem: File) => {
   const formData = new FormData();
   formData.append("file", imagem);
 
-  const response = await fetch("http://localhost:8000/analisa", {
+  const response = await fetch("https://backend-emocaoia.onrender.com/analisa", {
     method: "POST",
     body: formData,
   });
